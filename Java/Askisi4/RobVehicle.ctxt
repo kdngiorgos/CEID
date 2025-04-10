@@ -1,0 +1,7 @@
+#BlueJ class context
+comment0.target=RobVehicle
+comment1.params=name\ manufacturer\ days_of_usage\ costs\ miles
+comment1.target=RobVehicle(java.lang.String,\ java.lang.String,\ int,\ float,\ int)
+comment2.params=
+comment2.target=int\ getMiles()
+numComments=3
