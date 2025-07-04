@@ -1,4 +1,23 @@
-# CEID
-Computer Engineering 
+# C Programming Projects
 
-Hello I'm George, I'm studying Computer Engineering in UPatras since 2024, I wanted to keep a backup or archive of my projects. Some projects are completely mine (meaning I did whatever I wanted) and some were instructed so I did what my teachers wanted :(  So if some of part of the Code seems stupid might be because the teachers wanted it that way (or I am just trash at programming). Everyone is free to copy and reuse my code it is pretty beginner anyway.
+This folder contains various C programming exercises and projects covering fundamental concepts and algorithms.
+
+## Contents
+
+- **Basic Operations**: Mathematical operations and utilities
+- **Algorithms**: Sorting, searching, and mathematical sequences
+- **String Processing**: Text manipulation and handling
+- **Interactive Applications**: Menu-driven programs and complete systems
+
+## Usage
+
+Compile and run any C program:
+```bash
+gcc filename.c -o filename
+./filename
+```
+
+Each program demonstrates specific programming concepts and includes educational examples for learning C programming fundamentals.
+
+---
+*Part of CEID Computer Engineering studies at UPatras (2024)*
