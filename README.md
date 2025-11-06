@@ -20,20 +20,6 @@ CEID/
 └── Algorithms/  # Introduction to Algorithms Exercises
 ```
 
-### C Programs
-```bash
-# Compile and run C programs
-gcc filename.c -o filename
-./filename
-```
-
-### Java Programs
-```bash
-# Compile and run Java programs
-javac ClassName.java
-java ClassName [arguments]
-```
-
 ## 📝 Notes
 
 - Some code may contain Greek language comments and prompts
