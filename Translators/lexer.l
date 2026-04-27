@@ -1,0 +1,97 @@
+%{
+/*
+ * lexer.l — mySQLq Flex lexer
+ * Tokens for: SELECT, CREATE TABLE, JOIN, aliases, WHERE conditions.
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "parser.tab.h"
+#include "semantics.h"
+%}
+
+%option yylineno
+%option noyywrap
+%option noinput
+%option nounput
+%option case-insensitive
+
+%%
+
+    /* ---- multi-line comments ---- */
+"/*"([^*]|\*+[^*/])*\*+"/"   { /* skip */ }
+
+    /* ---- single-line comments ---- */
+"--"[^\n]*                    { /* skip */ }
+
+    /* ---- keywords ---- */
+"select"    { return TOK_SELECT; }
+"from"      { return TOK_FROM; }
+"where"     { return TOK_WHERE; }
+"limit"     { return TOK_LIMIT; }
+"group"     { return TOK_GROUP; }
+"order"     { return TOK_ORDER; }
+"by"        { return TOK_BY; }
+"in"        { return TOK_IN; }
+"and"       { return TOK_AND; }
+"or"        { return TOK_OR; }
+"not"       { return TOK_NOT; }
+"create"    { return TOK_CREATE; }
+"table"     { return TOK_TABLE; }
+"int"       { return TOK_INT_TYPE; }
+"float"     { return TOK_FLOAT_TYPE; }
+"varchar"   { return TOK_VARCHAR; }
+"join"      { return TOK_JOIN; }
+"on"        { return TOK_ON; }
+"as"        { return TOK_AS; }
+
+    /* ---- multi-character operators (must come before single-char) ---- */
+"!="    { return TOK_NEQ; }
+">="    { return TOK_GTE; }
+"<="    { return TOK_LTE; }
+">"     { return TOK_GT; }
+"<"     { return TOK_LT; }
+"="     { return TOK_EQ; }
+
+    /* ---- special characters ---- */
+"*"     { return TOK_STAR; }
+[.,;()] { return yytext[0]; }
+
+    /* ---- float literal (must come before int) ---- */
+"-"?[0-9]+"."[0-9]+  {
+    yylval.fval = atof(yytext);
+    return TOK_FLOAT_LIT;
+}
+
+    /* ---- int literal ---- */
+"-"?[0-9]+  {
+    yylval.ival = atoi(yytext);
+    return TOK_INT_LIT;
+}
+
+    /* ---- string literal (single-quoted) ---- */
+'[^']*'  {
+    /* strip surrounding single quotes */
+    int len = strlen(yytext) - 2;
+    yylval.str = (char *)malloc(len + 1);
+    strncpy(yylval.str, yytext + 1, len);
+    yylval.str[len] = '\0';
+    return TOK_STR_LIT;
+}
+
+    /* ---- identifier ---- */
+[a-zA-Z_][a-zA-Z0-9_]*  {
+    yylval.str = strdup(yytext);
+    return TOK_IDENT;
+}
+
+    /* ---- whitespace / newlines ---- */
+[ \t\r\n]+  { /* skip */ }
+
+    /* ---- anything else ---- */
+.  {
+    fprintf(stderr, "Lexer error: unexpected character '%s' on line %d\n",
+            yytext, yylineno);
+}
+
+%%

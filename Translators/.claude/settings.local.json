@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/**)",
+      "Read(//c/Program Files/GnuWin32/**)",
+      "Bash(command -v mingw32-make)",
+      "Bash(mingw32-make:*)",
+      "Bash(/c/MinGW/bin/bison.exe --version 2>&1)",
+      "Bash(./myParser tests/test_create_valid.sql 2>&1)",
+      "Bash(make)",
+      "Bash(./myParser.exe tests/test_select_invalid.sql)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Bash(./myParser.exe \"$f\")",
+      "Bash(done)",
+      "Bash(ls -lah parser.tab.* lexer.yy.c)",
+      "Bash(./myParser.exe tests/test_assignment_example.sql)",
+      "Bash(./myParser.exe tests/test_new_checks_valid.sql)",
+      "Bash(./myParser.exe tests/test_new_checks_invalid.sql)"
+    ]
+  }
+}
