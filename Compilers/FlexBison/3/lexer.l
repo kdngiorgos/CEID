@@ -1,5 +1,10 @@
+/*
+KANDILAS GEORGIOS AM:1115510
+KARPETAS APOSTOLOS AM:1115507
+*/
+
+/* Q3, prosthika JOIN/ON/AS */
 %{
-/* lexer.l - Q3, prosthika JOIN/ON/AS */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +12,8 @@
 #include "semantics.h"
 %}
 
+
+/* ENTOLES FLEX */
 %option yylineno
 %option noyywrap
 %option noinput
@@ -15,9 +22,11 @@
 
 %%
 
+/* Sxolia */
 "/*"([^*]|\*+[^*/])*\*+"/"   { /* skip */ }
 "--"[^\n]*                    { /* skip */ }
 
+/* Tokens */
 "select"    { return TOK_SELECT; }
 "from"      { return TOK_FROM; }
 "where"     { return TOK_WHERE; }
@@ -47,11 +56,13 @@
 "="     { return TOK_EQ; }
 
 "*"     { return TOK_STAR; }
-[.,;()] { return yytext[0]; }
+[.,;()] { return yytext[0]; }   // TODO: Learn
 
+
+/* Literals */
 /* float PRIN int, alliws to 3.14 to pernei san 3 kai teleia */
 "-"?[0-9]+"."[0-9]+  {
-    yylval.fval = atof(yytext);
+    yylval.fval = atof(yytext);  // TODO: Learn
     return TOK_FLOAT_LIT;
 }
 
@@ -74,8 +85,11 @@
     return TOK_IDENT;
 }
 
+
+/* Keno */
 [ \t\r\n]+  { /* skip */ }
 
+/* Printaroume */
 .  {
     fprintf(stderr, "Lexer error: unexpected character '%s' on line %d\n",
             yytext, yylineno);

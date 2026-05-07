@@ -1,11 +1,18 @@
+/* 
+KANDILAS GEORGIOS AM:1115510
+KARPETAS APOSTOLOS AM:1115507
+*/
+
+
+/* Q1, mono tokens */
 %{
-/* lexer.l - Q1, mono tokens, kamia semantiki akoma */
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "parser.tab.h"
 %}
 
+
+/* ENTOLES FLEX */
 %option yylineno
 %option noyywrap
 %option noinput
@@ -14,9 +21,11 @@
 
 %%
 
+/* Sxolia */
 "/*"([^*]|\*+[^*/])*\*+"/"   { /* skip */ }
 "--"[^\n]*                    { /* skip */ }
 
+/* Tokens */
 "select"    { return TOK_SELECT; }
 "from"      { return TOK_FROM; }
 "where"     { return TOK_WHERE; }
@@ -42,10 +51,12 @@
 "="     { return TOK_EQ; }
 
 "*"     { return TOK_STAR; }
-[.,;()] { return yytext[0]; }
+[.,;()] { return yytext[0]; }   // TODO: Learn
 
+
+/* Literals */
 "-"?[0-9]+"."[0-9]+  {
-    yylval.fval = atof(yytext);
+    yylval.fval = atof(yytext);  // TODO: Learn
     return TOK_FLOAT_LIT;
 }
 
@@ -67,10 +78,14 @@
     return TOK_IDENT;
 }
 
-[ \t\r\n]+  { /* skip */ }
 
+/* Keno */
+[ \t]+  { ECHO; }
+\n  { ECHO; }
+
+/* Printaroume */
 .  {
-    fprintf(stderr, "Lexer error: unexpected character '%s' on line %d\n",
+    fprintf(stderr, "Unknown character: %s at line %d\n",
             yytext, yylineno);
 }
 

@@ -1,5 +1,10 @@
+/*
+KANDILAS GEORGIOS AM:1115510
+KARPETAS APOSTOLOS AM:1115507
+*/
+
+/*Q3, prosthiki JOIN me aliases kai elegxos gia ambiguous cols */
 %{
-/* parser.y - Q3: prosthika JOIN me aliases kai elegxos gia ambiguous cols */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +21,7 @@ void yyerror(const char *s);
 extern int yylineno;
 extern FILE *yyin;
 
+/* Buffer */
 /* buffer gia ta cols tou CREATE TABLE */
 #define MAX_COLS_PARSE 64
 static Column create_cols[MAX_COLS_PARSE];
@@ -61,11 +67,12 @@ static int     in_literal_count = 0;
 %token <ival> TOK_INT_LIT
 %token <fval> TOK_FLOAT_LIT
 
+/* protereotita: OR < AND < NOT */
 %left  TOK_OR
 %left  TOK_AND
 %right TOK_NOT
 
-%type <str>      col_ref
+%type <str>      col_ref qualified_col_ref
 %type <ival>     comp_op
 %type <type_tag> literal type_spec
 
@@ -75,11 +82,13 @@ program
     : stmt_list
     ;
 
+/* eite adeio eite exei statement */
 stmt_list
     : /* empty */
     | stmt_list stmt
     ;
 
+/* 2 OPS, CREATE kai SELECT */
 stmt
     : create_stmt
     | select_stmt
@@ -175,15 +184,23 @@ table_ref
 
 join_list
     : /* empty */
-    | join_list TOK_JOIN table_ref TOK_ON col_ref TOK_EQ col_ref
+    | join_list TOK_JOIN table_ref TOK_ON qualified_col_ref TOK_EQ qualified_col_ref
         {
             /* elegxos kai twn duo merWN tou ON col1 = col2 */
             char *dot;
-            dot = strchr($5, '.');
-            if (dot) { *dot = '\0'; sem_column_exists($5, dot + 1); *dot = '.'; }
-            dot = strchr($7, '.');
-            if (dot) { *dot = '\0'; sem_column_exists($7, dot + 1); *dot = '.'; }
+            dot = strchr($5, '.'); *dot = '\0'; sem_column_exists($5, dot + 1);
+            dot = strchr($7, '.'); *dot = '\0'; sem_column_exists($7, dot + 1);
             free($5); free($7);
+        }
+    ;
+
+qualified_col_ref
+    : TOK_IDENT '.' TOK_IDENT
+        {
+            int len = strlen($1) + 1 + strlen($3) + 1;
+            $$ = malloc(len);
+            snprintf($$, len, "%s.%s", $1, $3);
+            free($1); free($3);
         }
     ;
 

@@ -1,5 +1,10 @@
+/*
+KANDILAS GEORGIOS AM:1115510
+KARPETAS APOSTOLOS AM:1115507
+*/
+
+/*Q2, syntaktiki + semantiki analysi */
 %{
-/* parser.y - Q2: syntaktiki + semantiki analysi */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +21,7 @@ void yyerror(const char *s);
 extern int yylineno;
 extern FILE *yyin;
 
+/* Buffer */
 /* buffer gia ta cols tou CREATE TABLE, gemizei me kathe col_def */
 #define MAX_COLS_PARSE 64
 static Column create_cols[MAX_COLS_PARSE];
@@ -54,6 +60,7 @@ static int     in_literal_count = 0;
 %token <ival> TOK_INT_LIT
 %token <fval> TOK_FLOAT_LIT
 
+/* protereotita: OR < AND < NOT */
 %left  TOK_OR
 %left  TOK_AND
 %right TOK_NOT
@@ -68,11 +75,13 @@ program
     : stmt_list
     ;
 
+/* eite adeio eite exei statement */
 stmt_list
     : /* empty */
     | stmt_list stmt
     ;
 
+/* 2 OPS, CREATE kai SELECT */
 stmt
     : create_stmt
     | select_stmt

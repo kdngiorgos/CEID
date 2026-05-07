@@ -1,5 +1,10 @@
+/* 
+KANDILAS GEORGIOS AM:1115510
+KARPETAS APOSTOLOS AM:1115507
+*/
+
+/*Q1, apla syntaktiki analysi */
 %{
-/* parser.y - Q1, apla syntaktiki analysi, xwris symbol table */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +12,7 @@
 #define MAX_LINES 4096
 #define MAX_LINE_LEN 1024
 
+/* Buffer */
 static char *lines[MAX_LINES];
 static int   line_count = 0;
 
@@ -33,6 +39,7 @@ extern FILE *yyin;
 %token <ival> TOK_INT_LIT
 %token <fval> TOK_FLOAT_LIT
 
+/* protereotita: OR < AND < NOT */
 %left  TOK_OR
 %left  TOK_AND
 %right TOK_NOT
@@ -40,24 +47,27 @@ extern FILE *yyin;
 %type <str> col_ref
 
 %%
+/* non-terminals
 
 program
     : stmt_list
     ;
 
+/* eite adeio eite exei statement */
 stmt_list
-    : /* empty */
+    : /* empty */ 
     | stmt_list stmt
     ;
 
+/* 2 OPS, CREATE kai SELECT */
 stmt
     : create_stmt
     | select_stmt
     ;
 
+/* 
 create_stmt
     : TOK_CREATE TOK_TABLE TOK_IDENT '(' col_def_list ')' ';'
-        { free($3); }
     ;
 
 col_def_list
@@ -66,8 +76,8 @@ col_def_list
     ;
 
 col_def
-    : TOK_IDENT type_spec { free($1); }
-    | TOK_IDENT TOK_VARCHAR '(' TOK_INT_LIT ')' { free($1); }
+    : TOK_IDENT type_spec
+    | TOK_IDENT TOK_VARCHAR '(' TOK_INT_LIT ')'
     ;
 
 type_spec
@@ -77,7 +87,6 @@ type_spec
 
 select_stmt
     : TOK_SELECT col_expr_list TOK_FROM TOK_IDENT opt_where opt_group opt_order opt_limit ';'
-        { free($4); }
     ;
 
 col_expr_list
@@ -86,19 +95,17 @@ col_expr_list
     ;
 
 col_ref_list
-    : col_ref { free($1); }
-    | col_ref_list ',' col_ref { free($3); }
+    : col_ref
+    | col_ref_list ',' col_ref
     ;
 
 col_ref
-    : TOK_IDENT { $$ = strdup($1); free($1); }
+    : TOK_IDENT { $$ = strdup($1); }
     | TOK_IDENT '.' TOK_IDENT
         {
             int len = strlen($1) + 1 + strlen($3) + 1;
             $$ = malloc(len);
             snprintf($$, len, "%s.%s", $1, $3);
-            free($1);
-            free($3);
         }
     ;
 
@@ -112,9 +119,9 @@ condition
     | condition TOK_AND condition
     | TOK_NOT condition
     | '(' condition ')'
-    | col_ref comp_op literal { free($1); }
-    | col_ref TOK_IN '(' in_literal_list ')' { free($1); }
-    | col_ref TOK_NOT TOK_IN '(' in_literal_list ')' { free($1); }
+    | col_ref comp_op literal
+    | col_ref TOK_IN '(' in_literal_list ')'
+    | col_ref TOK_NOT TOK_IN '(' in_literal_list ')'
     ;
 
 comp_op
@@ -129,7 +136,7 @@ comp_op
 literal
     : TOK_INT_LIT
     | TOK_FLOAT_LIT
-    | TOK_STR_LIT { free($1); }
+    | TOK_STR_LIT
     ;
 
 in_literal_list
@@ -154,6 +161,7 @@ opt_limit
 
 %%
 
+/* Error sinartisi */
 void yyerror(const char *s) {
     for (int i = 0; i < line_count && i < yylineno; i++) {
         printf("%s\n", lines[i]);
@@ -172,7 +180,8 @@ int main(int argc, char *argv[]) {
         perror(argv[1]);
         return 1;
     }
-
+    
+    /* Antigrafoume grammi grammi gia tin periptwsi tou error na exoume context*/
     char buf[MAX_LINE_LEN];
     while (fgets(buf, sizeof(buf), f) && line_count < MAX_LINES) {
         int len = strlen(buf);
@@ -180,20 +189,18 @@ int main(int argc, char *argv[]) {
         lines[line_count++] = strdup(buf);
     }
 
-    rewind(f);
-    yyin = f;
+    rewind(f); /* Epistrofi tou pointer stin arxi tou arxeiou */
+    yyin = f;  /* Input arxeio */
 
     int result = yyparse();
     fclose(f);
 
+    /*Ektipwnei olo to array */
     if (result == 0) {
         for (int i = 0; i < line_count; i++)
             printf("%s\n", lines[i]);
         printf("Syntactic analysis successful, program is syntactically correct.\n");
     }
-
-    for (int i = 0; i < line_count; i++)
-        free(lines[i]);
 
     return result;
 }
