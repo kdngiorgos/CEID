@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where mingw32-make *)",
+      "Bash(where make *)",
+      "Bash(where gcc *)",
+      "Read(//c/MinGW/bin/**)",
+      "Bash(C:/MinGW/bin/gcc.exe -Wall -g -o myParser parser.tab.c lexer.yy.c -lfl -LC:/MinGW/msys/1.0/lib)",
+      "Read(//tmp/**)",
+      "Bash(ls C:/MinGW/msys/1.0/lib/libfl*)",
+      "Bash(ls C:/MinGW/lib/libfl*)",
+      "Bash(C:/MinGW/bin/gcc.exe -Wall -g -o myParser parser.tab.c lexer.yy.c)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(C:/MinGW/bin/gcc.exe -Wall -g -c parser.tab.c -o parser.tab.o)",
+      "Bash(echo \"parser exit: $?\")",
+      "Bash(C:/MinGW/bin/gcc.exe -Wall -g -c lexer.yy.c -o lexer.yy.o)",
+      "Bash(echo \"lexer exit: $?\")",
+      "Bash(head -50 parser.tab.c)",
+      "Bash(head -20 lexer.yy.c)",
+      "Bash(echo 'int main\\(\\){return 0;}')",
+      "Bash(C:/MinGW/bin/gcc.exe test_simple.c -o test_simple)",
+      "Bash(rm -f test_simple.c test_simple.exe)",
+      "PowerShell(cd \"D:\\\\Work\\\\Github\\\\CEID\\\\Compilers\\\\FlexBison\\\\2\"; Set-Content -Encoding Ascii test_simple.c \"int main\\(\\){return 0;}\"; C:\\\\MinGW\\\\bin\\\\gcc.exe test_simple.c -o test_simple.exe 2>&1; Write-Host \"Exit: $LASTEXITCODE\"; Remove-Item test_simple.c, test_simple.exe -ErrorAction SilentlyContinue)",
+      "PowerShell(cd \"D:\\\\Work\\\\Github\\\\CEID\\\\Compilers\\\\FlexBison\\\\2\"; C:\\\\MinGW\\\\bin\\\\gcc.exe -Wall -g -std=c99 -c parser.tab.c 2>&1; Write-Host \"Exit: $LASTEXITCODE\")",
+      "PowerShell(cd \"D:\\\\Work\\\\Github\\\\CEID\\\\Compilers\\\\FlexBison\\\\2\"; $env:Path = \"C:\\\\MinGW\\\\bin;\" + $env:Path; gcc -Wall -g -c parser.tab.c 2>&1; Write-Host \"Exit: $LASTEXITCODE\")"
+    ]
+  }
+}

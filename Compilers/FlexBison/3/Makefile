@@ -11,6 +11,7 @@ ifeq ($(OS),Windows_NT)
   FLEX   = $(MINGW)/flex.exe
   BISON  = $(MINGW)/bison.exe
   LDLIBS = -lfl -LC:/MinGW/msys/1.0/lib
+  export PATH := C:/MinGW/bin:$(PATH)
 else
   FLEX   = flex
   BISON  = bison
@@ -18,7 +19,7 @@ else
 endif
 
 TARGET = myParser
-SRCS   = parser.tab.c lexer.yy.c semantics.c
+SRCS   = parser.tab.c lexer.yy.c
 
 $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(LDLIBS)

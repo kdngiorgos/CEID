@@ -8,7 +8,167 @@ KARPETAS APOSTOLOS AM:1115507
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "semantics.h"
+
+/* ===== SEMANTICS  ===== */
+
+typedef enum {
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_VARCHAR,
+    TYPE_UNKNOWN
+} ColType;
+
+#define MAX_COLS    64
+#define MAX_TABLES  128
+#define MAX_ALIASES 64
+
+typedef struct {
+    char name[64];
+    ColType type;
+    int varchar_size;   /* mono gia VARCHAR */
+} Column;
+
+typedef struct {
+    char name[64];
+    Column cols[MAX_COLS];
+    int col_count;
+} Table;
+
+/* to global symbol table - gemizei me kathe CREATE TABLE */
+static Table symbol_table[MAX_TABLES];
+static int   table_count = 0;
+
+static Table *find_table(const char *name) {
+    for (int i = 0; i < table_count; i++) {
+        if (strcmp(symbol_table[i].name, name) == 0)
+            return &symbol_table[i];
+    }
+    return NULL;
+}
+
+static Column *find_column(Table *t, const char *col) {
+    for (int i = 0; i < t->col_count; i++) {
+        if (strcmp(t->cols[i].name, col) == 0)
+            return &t->cols[i];
+    }
+    return NULL;
+}
+
+static const char *coltype_str(ColType t) {
+    switch (t) {
+        case TYPE_INT:     return "INT";
+        case TYPE_FLOAT:   return "FLOAT";
+        case TYPE_VARCHAR: return "VARCHAR";
+        default:           return "UNKNOWN";
+    }
+}
+
+static void sem_create_table(const char *name, Column *cols, int col_count) {
+   /* elegxos an uparxei hdh to table */
+    if (find_table(name)) {
+        fprintf(stderr, "Semantic error: table '%s' already defined.\n", name);
+        return;
+    }
+    /* elegxos gia duplicate cols mesa sto idio table */
+    for (int i = 0; i < col_count; i++) {
+        for (int j = i + 1; j < col_count; j++) {
+            if (strcmp(cols[i].name, cols[j].name) == 0) {
+                fprintf(stderr,
+                    "Semantic error: duplicate column '%s' in table '%s'.\n",
+                    cols[i].name, name);
+                return;
+            }
+        }
+    }
+    if (table_count >= MAX_TABLES) {
+        fprintf(stderr, "Semantic error: too many tables (max %d).\n", MAX_TABLES);
+        return;
+    }
+    Table *t = &symbol_table[table_count++];
+    strncpy(t->name, name, sizeof(t->name) - 1);
+    t->col_count = col_count;
+    for (int i = 0; i < col_count; i++)
+        t->cols[i] = cols[i];
+}
+
+static void sem_from_check(const char *name) {
+    if (!find_table(name))
+        fprintf(stderr, "Semantic error: unknown table '%s'.\n", name);
+}
+
+static void sem_column_exists(const char *table, const char *col) {
+    Table *t = find_table(table);
+    if (!t) {
+        fprintf(stderr, "Semantic error: unknown table '%s'.\n", table);
+        return;
+    }
+    if (!find_column(t, col))
+        fprintf(stderr,
+            "Semantic error: column '%s' not found in table '%s'.\n",
+            col, table);
+}
+
+static void sem_type_check(const char *table, const char *col, ColType lit_type) {
+    Table *t = find_table(table);
+    if (!t) {
+        fprintf(stderr, "Semantic error: unknown table '%s'.\n", table);
+        return;
+    }
+    Column *c = find_column(t, col);
+    if (!c) {
+        fprintf(stderr,
+            "Semantic error: column '%s' not found in table '%s'.\n",
+            col, table);
+        return;
+    }
+    /* ta INT dexontai INT, ta FLOAT dexontai FLOAT kai INT, ta VARCHAR dexontai VARCHAR */
+    int ok = 0;
+    if (c->type == TYPE_INT && lit_type == TYPE_INT)
+        ok = 1;
+    else if (c->type == TYPE_FLOAT && (lit_type == TYPE_INT || lit_type == TYPE_FLOAT))
+        ok = 1;
+    else if (c->type == TYPE_VARCHAR && lit_type == TYPE_VARCHAR)
+        ok = 1;
+    if (!ok)
+        fprintf(stderr,
+            "Semantic error: type mismatch — column '%s.%s' is %s, "
+            "but literal is %s.\n",
+            table, col, coltype_str(c->type), coltype_str(lit_type));
+}
+
+static void sem_type_check_in(const char *table, const char *col,
+                               ColType *lit_types, int lit_count) {
+    Table *t = find_table(table);
+    if (!t) {
+        fprintf(stderr, "Semantic error: unknown table '%s'.\n", table);
+        return;
+    }
+    Column *c = find_column(t, col);
+    if (!c) {
+        fprintf(stderr,
+            "Semantic error: column '%s' not found in table '%s'.\n",
+            col, table);
+        return;
+    }
+    /* idia logiki me type_check, apla gia kathe stoixeio tis listas */
+    for (int i = 0; i < lit_count; i++) {
+        int ok = 0;
+        if (c->type == TYPE_INT && lit_types[i] == TYPE_INT)
+            ok = 1;
+        else if (c->type == TYPE_FLOAT &&
+                 (lit_types[i] == TYPE_INT || lit_types[i] == TYPE_FLOAT))
+            ok = 1;
+        else if (c->type == TYPE_VARCHAR && lit_types[i] == TYPE_VARCHAR)
+            ok = 1;
+        if (!ok)
+            fprintf(stderr,
+                "Semantic error: type mismatch in IN list — column '%s.%s' "
+                "is %s, but literal is %s.\n",
+                table, col, coltype_str(c->type), coltype_str(lit_types[i]));
+    }
+}
+
+/* ===== END SEMANTICS ===== */
 
 #define MAX_LINES 4096
 #define MAX_LINE_LEN 1024
@@ -27,16 +187,16 @@ extern FILE *yyin;
 static Column create_cols[MAX_COLS_PARSE];
 static int    create_col_count = 0;
 
-/* h tabla pou einai active sto trexon SELECT */
+/* to table pou einai active sto trexon SELECT */
 static char *current_query_table = NULL;
 
 /* ta cols tou SELECT ta apothikevw edw kai ta elegxo meta to FROM
-   giati o parser ta vlepei prin mathi tin tabla */
+   giati o parser ta vlepei prin diabasei to table */
 #define MAX_SELECT_COLS 64
 static char *select_cols[MAX_SELECT_COLS];
 static int   select_col_count = 0;
 
-/* buffer typwn gia IN/NOT IN list */
+/* buffer typwn gia IN / NOT IN list */
 #define MAX_IN_LITERALS 256
 static ColType in_literal_types[MAX_IN_LITERALS];
 static int     in_literal_count = 0;

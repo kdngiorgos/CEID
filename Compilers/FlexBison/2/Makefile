@@ -8,6 +8,7 @@ CFLAGS = -Wall -g
 # Tool and library paths differ on Windows vs Unix
 ifeq ($(OS),Windows_NT)
   MINGW  = C:/MinGW/msys/1.0/bin
+  export PATH := C:/MinGW/bin:$(PATH)
   FLEX   = $(MINGW)/flex.exe
   BISON  = $(MINGW)/bison.exe
   LDLIBS = -lfl -LC:/MinGW/msys/1.0/lib
@@ -18,7 +19,7 @@ else
 endif
 
 TARGET = myParser
-SRCS   = parser.tab.c lexer.yy.c semantics.c
+SRCS   = parser.tab.c lexer.yy.c
 
 $(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(LDLIBS)

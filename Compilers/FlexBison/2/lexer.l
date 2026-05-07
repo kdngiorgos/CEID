@@ -9,9 +9,7 @@ KARPETAS APOSTOLOS AM:1115507
 #include <stdlib.h>
 #include <string.h>
 #include "parser.tab.h"
-#include "semantics.h"
 %}
-
 
 /* ENTOLES FLEX */
 %option yylineno
@@ -22,11 +20,9 @@ KARPETAS APOSTOLOS AM:1115507
 
 %%
 
-/* Sxolia */
 "/*"([^*]|\*+[^*/])*\*+"/"   { /* skip */ }
 "--"[^\n]*                    { /* skip */ }
 
-/* Tokens */
 "select"    { return TOK_SELECT; }
 "from"      { return TOK_FROM; }
 "where"     { return TOK_WHERE; }
@@ -43,23 +39,17 @@ KARPETAS APOSTOLOS AM:1115507
 "int"       { return TOK_INT_TYPE; }
 "float"     { return TOK_FLOAT_TYPE; }
 "varchar"   { return TOK_VARCHAR; }
-
-/* ta dimerismata prepei na erthoun PRIN ta monomata */
 "!="    { return TOK_NEQ; }
 ">="    { return TOK_GTE; }
 "<="    { return TOK_LTE; }
 ">"     { return TOK_GT; }
 "<"     { return TOK_LT; }
 "="     { return TOK_EQ; }
-
 "*"     { return TOK_STAR; }
-[.,;()] { return yytext[0]; }   // TODO: Learn
+[.,;()] { return yytext[0]; }
 
-
-/* Literals */
-/* float PRIN int, alliws to 3.14 to pernei san 3 kai teleia */
 "-"?[0-9]+"."[0-9]+  {
-    yylval.fval = atof(yytext);  // TODO: Learn
+    yylval.fval = atof(yytext);
     return TOK_FLOAT_LIT;
 }
 
@@ -69,7 +59,6 @@ KARPETAS APOSTOLOS AM:1115507
 }
 
 '[^']*'  {
-    /* afairw ta single quotes apo gyrw */
     int len = strlen(yytext) - 2;
     yylval.str = (char *)malloc(len + 1);
     strncpy(yylval.str, yytext + 1, len);
@@ -82,11 +71,8 @@ KARPETAS APOSTOLOS AM:1115507
     return TOK_IDENT;
 }
 
-
-/* Keno */
 [ \t\r\n]+  { /* skip */ }
 
-/* Printaroume */
 .  {
     fprintf(stderr, "Lexer error: unexpected character '%s' on line %d\n",
             yytext, yylineno);
