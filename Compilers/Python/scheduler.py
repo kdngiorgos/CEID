@@ -15,7 +15,7 @@ class AutoRefresher:
         if self._active:
             return
         self._active = True
-        # Daemon thread: κλείνει αυτόματα όταν κλείνει το παράθυρο, χωρίς να χρειαστεί extra cleanup
+        # thread: κλείνει αυτόματα όταν κλείνει το παράθυρο
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
         log("Scheduler", "Started", f"ανανέωση ανά {self.interval // 3600} ώρες")

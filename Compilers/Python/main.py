@@ -1,7 +1,19 @@
+import sys
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import threading
 import pandas as pd
+
+# Python 3.14 καλεί __del__ σε background threads κατά το GC,
+# με αποτέλεσμα "main thread is not in main loop" σε Tkinter objects.
+# Αυτό είναι γνωστό θέμα Python 3.14 + Tkinter — δεν επηρεάζει λειτουργικότητα.
+_real_hook = sys.unraisablehook
+def _unraisable_hook(args):
+    if isinstance(args.exc_value, RuntimeError) and \
+            "main thread is not in main loop" in str(args.exc_value):
+        return
+    _real_hook(args)
+sys.unraisablehook = _unraisable_hook
 
 from config import STUDENTS_NAME, AM, CATEGORIES, DIFFICULTIES, LANGUAGES
 from collectors import collect_all
